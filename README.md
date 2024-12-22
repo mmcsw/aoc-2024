@@ -2,7 +2,7 @@
 
 Solutions by Matthew McSweeney
 
-Solved in C, making use of the [STC]() library.
+Solved in C, making use of the [STC](https://github.com/stclib/STC) library.
 
 ## Compiling
 
@@ -29,5 +29,5 @@ This will produce an executable named `main`.
 The solution program is monolithic, and you specify a problem number and input file via options.
 
 ```sh
-$ ./main -m <PROBLEM_NUMBER> -f <FILE>
+$ ./main -n <PROBLEM_NUMBER> -f <FILE>
 ```
