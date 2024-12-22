@@ -1,0 +1,7 @@
+*.o
+*.d
+*.out
+main
+.clang-format
+.clang-tidy
+
