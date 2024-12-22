@@ -1,66 +1,9 @@
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#define BUF_SIZE 65536
+#include "01.h"
 
 int
-count_lines_in_file(FILE* file, size_t* counter)
+solution_01_read_file(char const* const filename, vec_loc_id lists[2])
 {
-  if (!file || !counter)
-  {
-    return -1;
-  }
-
-  char buf[BUF_SIZE];
-
-  while (true)
-  {
-    size_t read_bytes = fread(buf, sizeof(char), BUF_SIZE, file);
-    if (ferror(file))
-    {
-      return -1;
-    }
-    for (size_t i = 0; i < read_bytes; i++)
-    {
-      if (buf[i] == '\n')
-      {
-        *counter += 1;
-      }
-    }
-    if (feof(file))
-    {
-      break;
-    }
-  }
-
-  return fseek(file, 0, SEEK_SET);
-}
-
-int
-size_t_cmp(const void* size_t_a, const void* size_t_b)
-{
-  size_t* a = (size_t*)(size_t_a);
-  size_t* b = (size_t*)(size_t_b);
-
-  if (*a < *b)
-  {
-    return -1;
-  }
-  else if (*a > *b)
-  {
-    return 1;
-  }
-  else
-  {
-    return 0;
-  }
-}
-
-int
-read_location_ID_file(char const* const filename, size_t** arrays, size_t* array_len)
-{
-  if (!arrays || !array_len)
+  if (!lists)
   {
     return -1;
   }
@@ -76,18 +19,13 @@ read_location_ID_file(char const* const filename, size_t** arrays, size_t* array
   {
     return -1;
   }
-  *array_len = num_lines;
 
-  size_t* arr_0 = malloc(num_lines * sizeof(size_t));
-  size_t* arr_1 = malloc(num_lines * sizeof(size_t));
-  if (!arr_0 || !arr_1)
+  lists[0] = vec_loc_id_init();
+  lists[1] = vec_loc_id_init();
+  if (!vec_loc_id_reserve(&lists[0], num_lines) || !vec_loc_id_reserve(&lists[1], num_lines))
   {
-    free(arr_0);
-    free(arr_1);
     return -1;
   }
-  arrays[0] = arr_0;
-  arrays[1] = arr_1;
 
   for (size_t i = 0; i < num_lines; i++)
   {
@@ -96,64 +34,61 @@ read_location_ID_file(char const* const filename, size_t** arrays, size_t* array
     {
       return -1;
     }
-    arr_0[i] = id_0;
-    arr_1[i] = id_1;
+    vec_loc_id_push(&lists[0], id_0);
+    vec_loc_id_push(&lists[1], id_1);
   }
   fclose(file);
 
   return 0;
 }
 
-size_t
-array_location_id_distance(size_t* arr_0, size_t* arr_1, size_t arr_len)
+uintptr_t
+solution_01_part_1(vec_loc_id const lists[2])
 {
-  qsort(arr_0, arr_len, sizeof(size_t), size_t_cmp);
-  qsort(arr_1, arr_len, sizeof(size_t), size_t_cmp);
-
-  size_t distance = 0;
-  for (size_t i = 0; i < arr_len; i++)
+  uintptr_t distance = 0;
+  for (size_t i = 0; i < vec_loc_id_size(&lists[0]); i++)
   {
-    size_t* a = &arr_0[i];
-    size_t* b = &arr_1[i];
-    if (size_t_cmp(a, b) > 0)
+    uintptr_t a = *vec_loc_id_at(&lists[0], i);
+    uintptr_t b = *vec_loc_id_at(&lists[1], i);
+    if (a > b)
     {
-      distance += *a - *b;
+      distance += a - b;
     }
     else
     {
-      distance += *b - *a;
+      distance += b - a;
     }
   }
   return distance;
 }
 
-size_t
-array_location_id_similarity(size_t* arr_0, size_t* arr_1, size_t arr_len)
+uintptr_t
+solution_01_part_2(vec_loc_id const lists[2])
 {
-  size_t similarity = 0;
+  uintptr_t similarity = 0;
   size_t i = 0;
   size_t j = 0;
-  while (i < arr_len && j < arr_len)
+  while (i < vec_loc_id_size(&lists[0]) && j < vec_loc_id_size(&lists[1]))
   {
-    if (arr_0[i] < arr_1[j])
+    if (*vec_loc_id_at(&lists[0], i) < *vec_loc_id_at(&lists[1], j))
     {
       i += 1;
     }
-    else if (arr_0[i] > arr_1[j])
+    else if (*vec_loc_id_at(&lists[0], i) > *vec_loc_id_at(&lists[1], j))
     {
       j += 1;
     }
     else
     {
-      size_t value = arr_0[i];
+      size_t value = *vec_loc_id_at(&lists[0], i);
       size_t r_occurrences = 0;
       size_t l_occurrences = 0;
-      while (j < arr_len && arr_0[i] == arr_1[j])
+      while (j < vec_loc_id_size(&lists[1]) && value == *vec_loc_id_at(&lists[1], j))
       {
         r_occurrences += 1;
         j += 1;
       }
-      while (i < arr_len && arr_0[i] == value)
+      while (i < vec_loc_id_size(&lists[0]) && *vec_loc_id_at(&lists[0], i) == value)
       {
         l_occurrences += 1;
         i += 1;
@@ -165,30 +100,28 @@ array_location_id_similarity(size_t* arr_0, size_t* arr_1, size_t arr_len)
 }
 
 int
-main_01(const int argc, char const* const* argv)
+solution_01(char const* filename)
 {
-
-  char const* filename = "1.txt";
-  if (argc > 1)
+  vec_loc_id lists[2];
+  if (solution_01_read_file(filename, lists))
   {
-    filename = argv[1];
+    return -1;
   }
 
-  size_t* arrays[2] = { NULL, NULL };
-  size_t array_len = 0;
-  if (read_location_ID_file(filename, arrays, &array_len))
-  {
-    return EXIT_FAILURE;
-  }
+  vec_loc_id sorted_lists[2] = { vec_loc_id_clone(lists[0]), vec_loc_id_clone(lists[1]) };
+  vec_loc_id_sort(&sorted_lists[0]);
+  vec_loc_id_sort(&sorted_lists[1]);
 
-  size_t distance = array_location_id_distance(arrays[0], arrays[1], array_len);
+  size_t distance = solution_01_part_1(sorted_lists);
   fprintf(stdout, "%zu\n", distance);
 
-  size_t similarity = array_location_id_similarity(arrays[0], arrays[1], array_len);
+  size_t similarity = solution_01_part_2(sorted_lists);
   fprintf(stdout, "%zu\n", similarity);
 
-  free(arrays[0]);
-  free(arrays[1]);
+  vec_loc_id_drop(&lists[0]);
+  vec_loc_id_drop(&lists[1]);
+  vec_loc_id_drop(&sorted_lists[0]);
+  vec_loc_id_drop(&sorted_lists[1]);
 
-  return EXIT_SUCCESS;
+  return 0;
 }

@@ -1,18 +1,21 @@
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "02.h"
 
-#define BUF_SIZE 65536
+static int
+solution_02_read_file(char const* const filename) {
+  return 0;
+}
+
+static uintptr_t
+solution_02_part_1() {
+  return 0;
+}
+
+static uintptr_t
+solution_02_part_2() {
+  return 0;
+}
 
 int
-main_02(const int argc, char const* const* argv)
-{
-
-  char const* filename = "1.txt";
-  if (argc > 1)
-  {
-    filename = argv[1];
-  }
-
-  return EXIT_SUCCESS;
+solution_02(char const* filename) {
+  return 0;
 }
